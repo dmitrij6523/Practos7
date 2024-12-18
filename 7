@@ -1,0 +1,281 @@
+class Practos7
+{
+    static void Main()
+    {
+        var stLogins = InitializeLogins(new Dictionary<string, string>
+        {
+            { "Student1", "Student321" },
+            { "Student2", "Student123" }
+        });
+
+        var tLogins = InitializeLogins(new Dictionary<string, string>
+        {
+            { "Teacher", "Teacher213" }
+        });
+
+        var aLogins = InitializeLogins(new Dictionary<string, string>
+        {
+            { "admin", "admin" }
+        });
+
+        var students = new List<Student>
+        {
+            new Student("Колб", "Дмитрий", "Михайлович", 2007, "Группа 1"),
+            new Student("Иванов", "Олег", "Александрович", 2006, "Группа 2")
+        };
+
+        var teachers = new List<Teacher>
+        {
+            new Teacher("Сидоров", "Владимир", "Борисович", 1994, "География")
+        };
+
+        var journal = new Journal();
+
+        while (true)
+        {
+            Console.WriteLine("Выберите способ входа: Студент, Преподаватель, Администратор");
+            string userRole = Console.ReadLine()?.ToLower();
+
+            switch (userRole)
+            {
+                case "студент":
+                    HandleStudentLogin(stLogins, journal);
+                    break;
+                case "преподаватель":
+                    HandleTeacherLogin(tLogins, journal);
+                    break;
+                case "администратор":
+                    HandleAdminLogin(aLogins, students, teachers, journal);
+                    break;
+                default:
+                    Console.WriteLine("Неверная роль. Попробуйте снова.");
+                    break;
+            }
+        }
+    }
+
+    static Dictionary<string, string> InitializeLogins(Dictionary<string, string> logins)
+    {
+        return new Dictionary<string, string>(logins);
+    }
+
+    static void HandleStudentLogin(Dictionary<string, string> logins, Journal journal)
+    {
+        if (Authenticate(logins))
+        {
+            Console.WriteLine("Добро пожаловать, студент!");
+            Console.WriteLine("Ваш журнал:");
+            journal.DisplayJournal();
+        }
+    }
+
+    static void HandleTeacherLogin(Dictionary<string, string> logins, Journal journal)
+    {
+        if (Authenticate(logins))
+        {
+            Console.WriteLine("Добро пожаловать, преподаватель!");
+            TeacherMenu(journal);
+        }
+    }
+
+    static void HandleAdminLogin(Dictionary<string, string> logins, List<Student> students, List<Teacher> teachers, Journal journal)
+    {
+        if (Authenticate(logins))
+        {
+            Console.WriteLine("Добро пожаловать, администратор!");
+            AdminMenu(students, teachers, journal);
+        }
+    }
+
+    static bool Authenticate(Dictionary<string, string> validLogins)
+    {
+        Console.Write("Введите логин: ");
+        string inLogin = Console.ReadLine();
+        Console.Write("Введите пароль: ");
+        string inPassword = Console.ReadLine();
+
+        if (validLogins.TryGetValue(inLogin, out string correctPassword) && correctPassword == inPassword)
+        {
+            return true;
+        }
+
+        Console.WriteLine("Неверные логин или пароль.");
+        return false;
+    }
+
+    static void TeacherMenu(Journal journal)
+    {
+        while (true)
+        {
+            Console.WriteLine("\nМеню преподавателя:");
+            Console.WriteLine("1. Просмотреть журнал");
+            Console.WriteLine("2. Добавить оценку");
+            Console.WriteLine("3. Изменить оценку");
+            Console.WriteLine("4. Удалить оценку");
+            Console.WriteLine("5. Выход");
+
+            switch (Console.ReadLine())
+            {
+                case "1": journal.DisplayJournal(); break;
+                case "2": journal.AddGrade(); break;
+                case "3": journal.EditGrade(); break;
+                case "4": journal.DeleteGrade(); break;
+                case "5": return;
+                default: Console.WriteLine("Неверный выбор. Попробуйте снова."); break;
+            }
+        }
+    }
+static void AdminMenu(List<Student> students, List<Teacher> teachers, Journal journal)
+    {
+        while (true)
+        {
+            Console.WriteLine("\nМеню администратора:");
+            Console.WriteLine("1. Добавить студента");
+            Console.WriteLine("2. Удалить студента");
+            Console.WriteLine("3. Добавить преподавателя");
+            Console.WriteLine("4. Удалить преподавателя");
+            Console.WriteLine("5. Просмотреть журнал");
+            Console.WriteLine("6. Выход");
+
+            switch (Console.ReadLine())
+            {
+                case "1": students.Add(Student.CreateStudent()); break;
+                case "2": RemoveStudent(students); break;
+                case "3": teachers.Add(Teacher.CreateTeacher()); break;
+                case "4": RemoveTeacher(teachers); break;
+                case "5": journal.DisplayJournal(); break;
+                case "6": return;
+                default: Console.WriteLine("Неверный выбор. Попробуйте снова."); break;
+            }
+        }
+    }
+
+    static void RemoveStudent(List<Student> students)
+    {
+        Console.Write("Введите фамилию студента для удаления: ");
+        string lastName = Console.ReadLine();
+        students.RemoveAll(s => s.LastName == lastName);
+        Console.WriteLine("Студент удален.");
+    }
+
+    static void RemoveTeacher(List<Teacher> teachers)
+    {
+        Console.Write("Введите фамилию преподавателя для удаления: ");
+        string lastName = Console.ReadLine();
+        teachers.RemoveAll(t => t.LastName == lastName);
+        Console.WriteLine("Преподаватель удален.");
+    }
+}
+
+class Student
+{
+    public string LastName { get; set; }
+    public string FirstName { get; set; }
+    public string MiddleName { get; set; }
+    public int YearOfBirth { get; set; }
+    public string Group { get; set; }
+
+    public Student(string lastName, string firstName, string middleName, int yearOfBirth, string group)
+    {
+        LastName = lastName;
+        FirstName = firstName;
+        MiddleName = middleName;
+        YearOfBirth = yearOfBirth;
+        Group = group;
+    }
+
+    public static Student CreateStudent()
+    {
+        Console.Write("Фамилия: "); string lastName = Console.ReadLine();
+        Console.Write("Имя: "); string firstName = Console.ReadLine();
+        Console.Write("Отчество: "); string middleName = Console.ReadLine();
+        Console.Write("Год рождения: "); int yearOfBirth = int.Parse(Console.ReadLine());
+        Console.Write("Группа: "); string group = Console.ReadLine();
+
+        return new Student(lastName, firstName, middleName, yearOfBirth, group);
+    }
+}
+
+class Teacher
+{
+    public string LastName { get; set; }
+    public string FirstName { get; set; }
+    public string MiddleName { get; set; }
+    public int YearOfBirth { get; set; }
+    public string Discipline { get; set; }
+
+    public Teacher(string lastName, string firstName, string middleName, int yearOfBirth, string discipline)
+    {
+        LastName = lastName;
+        FirstName = firstName;
+        MiddleName = middleName;
+        YearOfBirth = yearOfBirth;
+        Discipline = discipline;
+    }
+
+    public static Teacher CreateTeacher()
+    {
+        Console.Write("Фамилия: "); string lastName = Console.ReadLine();
+        Console.Write("Имя: "); string firstName = Console.ReadLine();
+        Console.Write("Отчество: "); string middleName = Console.ReadLine();
+        Console.Write("Год рождения: "); int yearOfBirth = int.Parse(Console.ReadLine());
+        Console.Write("Дисциплина: "); string discipline = Console.ReadLine();
+
+        return new Teacher(lastName, firstName, middleName, yearOfBirth, discipline);
+    }
+}
+
+class Journal
+{
+    private readonly Dictionary<string, int> gradeRecords = new();
+
+    public void DisplayJournal()
+    {
+        if (gradeRecords.Count == 0)
+        {
+            Console.WriteLine("Журнал пуст.");
+            return;
+        }
+
+        foreach (var record in gradeRecords)
+        {
+            Console.WriteLine($"{record.Key}: {record.Value}");
+        }
+    }
+
+public void AddGrade()
+    {
+        Console.Write("Введите предмет: "); string subject = Console.ReadLine();
+        Console.Write("Введите оценку (1-5): "); int grade = int.Parse(Console.ReadLine());
+        gradeRecords[subject] = grade;
+        Console.WriteLine("Оценка добавлена.");
+    }
+
+    public void EditGrade()
+    {
+        Console.Write("Введите предмет для изменения оценки: "); string subject = Console.ReadLine();
+        if (gradeRecords.ContainsKey(subject))
+        {
+            Console.Write("Введите новую оценку (1-5): "); int grade = int.Parse(Console.ReadLine());
+            gradeRecords[subject] = grade;
+            Console.WriteLine("Оценка изменена.");
+        }
+        else
+        {
+            Console.WriteLine("Такого предмета нет в журнале.");
+        }
+    }
+
+    public void DeleteGrade()
+    {
+        Console.Write("Введите предмет для удаления: "); string subject = Console.ReadLine();
+        if (gradeRecords.Remove(subject))
+        {
+            Console.WriteLine("Оценка удалена.");
+        }
+        else
+        {
+            Console.WriteLine("Такого предмета нет в журнале.");
+        }
+    }
+}
